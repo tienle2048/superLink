@@ -16,7 +16,7 @@ const SubPool = ({ dataSubRoute }) => {
           return (
             <div className='item-pool'>
               <span className='namePool'>
-                <a href={`https://etherscan.io/address/${item.address}`} target="_blank">
+                <a href={`https://bscscan.com/address/${item.address}`} target="_blank">
                   {item.namePool ? item.namePool : item.name}
                 </a>
 
@@ -26,7 +26,7 @@ const SubPool = ({ dataSubRoute }) => {
               {/* <span>{item.maxAmount}</span> */}
 
 
-              <span>{item.splicePercent * 100}</span>
+              <span>{item.splicePercent * 100}%</span>
               {/* <span>{item.rate}</span> */}
             </div>
           )
@@ -45,7 +45,7 @@ const PoolCard = ({ dataRoute, percent }) => {
       <div className='poolcard'>
         {dataRoute.map(item => <SubPool dataSubRoute={item} />)}
       </div>
-      <div>{percent * 100}</div>
+      <div>{`${percent * 100}%`}</div>
     </>
   )
 }
@@ -79,7 +79,13 @@ function App() {
 
 
   useEffect(() => {
-    init()
+    const a = setTimeout(()=>{
+      init()
+    },200)
+
+    return ()=>{
+      clearTimeout(a)
+    }
   }, [input])
 
   return (
@@ -94,26 +100,6 @@ function App() {
           </div>
           <div className='input'>
             <input value={outPut}></input>
-          </div>
-          <div className='info'>
-            <div className='info-content'>
-              <div>
-                rate
-              </div>
-              <div>
-                100
-              </div>
-            </div>
-            
-            <div className='info-content'>
-              <div>
-                price impact
-              </div>
-              <div>
-                100
-              </div>
-            </div>
-            
           </div>
         </div>
       </div>
