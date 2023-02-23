@@ -513,11 +513,12 @@ const getAddressToken0 = async (address) => {
     return await contract.methods.token0().call()
 }
 
-export const main = async (tokenA, tokenB,  amount = 100) => {
+export const main = async (tokenA, tokenB,  amount = 100,optionPercent) => {
 
 
 
     const allPoll = await findAllRoute(tokenA, tokenB)
+    console.log("🚀 ~ file: okla.js:521 ~ main ~ allPoll:", allPoll)
 
 
     const RoutePoolDetail = await Promise.all(allPoll.map(async item => {
@@ -580,7 +581,7 @@ export const main = async (tokenA, tokenB,  amount = 100) => {
 
     RoutePoolDetail.map(item => {
         item.route.map(routeItem => {
-            routeItem.subRoute = routeItem.subRoute.filter(item => item.splicePercent>0.001)
+            routeItem.subRoute = routeItem.subRoute.filter(item => item.splicePercent>optionPercent)
         })
     })
 
@@ -637,7 +638,7 @@ export const main = async (tokenA, tokenB,  amount = 100) => {
 
 
 
-    const filterPathSmallLiq = okla.filter(item => item.splicePercent>0.001)
+    const filterPathSmallLiq = okla.filter(item => item.splicePercent>optionPercent)
 
     const totalLiqFilter = filterPathSmallLiq.reduce((a, b) => a + b.estLiq, 0)
 
@@ -655,6 +656,9 @@ export const main = async (tokenA, tokenB,  amount = 100) => {
             amountIn: item.splicePercent * amount
         }
     })
+
+
+
 
     const spliceAmountInSubRoute = spliceAmountInRoute.map(item => {
         let okla

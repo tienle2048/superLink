@@ -68,15 +68,22 @@ function App() {
   const [dataRoute, setDataRoute] = useState([])
   const [input,setInput] = useState(0)
   const [outPut,setOutPut] =useState(0)
+  const [percentLimit,setPercentLimit] = useState(0)
 
   const init = async () => {
-    const data = await main(cake, token1V2,input*(10**36))
+    const data = await main(cake, token1V2,input*(10**36),percentLimit)
     console.log("🚀 ~ file: App.js:59 ~ init ~ data", data)
     setDataRoute(data)
     const out = data.reduce((a,b)=>a+b.amountOut,0)/(10**36)
     setOutPut(out)
   }
 
+  
+  const handleClick =()=>{
+
+    const percent = percentLimit>0 ? 0:0.001
+    setPercentLimit(percent)
+  }
 
   useEffect(() => {
     const a = setTimeout(()=>{
@@ -86,7 +93,7 @@ function App() {
     return ()=>{
       clearTimeout(a)
     }
-  }, [input])
+  }, [input,percentLimit])
 
   return (
     <div className="supper-link">
@@ -94,6 +101,7 @@ function App() {
         {dataRoute.map(item => <PoolCard dataRoute={item.route} percent={item.splicePercent} />)}
       </div>
       <div className='input-amount'>
+        <button onClick={handleClick} style={{cursor:'pointer'}}>Filter Router</button>
         <div className='input-amount_card'>
           <div className='input'>
             <input value={input} onChange={e=>setInput(e.target.value)}></input>
