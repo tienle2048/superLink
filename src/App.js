@@ -1,6 +1,6 @@
 import logo from './logo.svg';
 import './App.css';
-import { main } from './test';
+import { main } from './okla';
 import { useEffect, useState } from 'react'
 
 
@@ -70,7 +70,7 @@ function App() {
   const [outPut,setOutPut] =useState(0)
 
   const init = async () => {
-    const data = await main(token0, token1,input*(10**36))
+    const data = await main(cake, token1V2,input*(10**36))
     console.log("🚀 ~ file: App.js:59 ~ init ~ data", data)
     setDataRoute(data)
     const out = data.reduce((a,b)=>a+b.amountOut,0)/(10**36)
