@@ -60,7 +60,9 @@ function App() {
 
   const cake ={ address:"0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82","chainId": 56, "decimals": 18, "symbol": "CAKE"}
   const dodo ={ address:"0x67ee3Cb086F8a16f34beE3ca72FAD36F7Db929e2","chainId": 56, "decimals": 18, "symbol": "DODO"}
-
+  const bnb ={ address:"0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c","chainId": 56, "decimals": 18, "symbol": "BNB"}
+  const busd ={ address:"0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56","chainId": 56, "decimals": 18, "symbol": "BUSD"}
+  
 
   const token1V2 ={ address:"0xBf5140A22578168FD562DCcF235E5D43A02ce9B1","chainId": 56, "decimals": 18, "symbol": "UNI"}
 
@@ -71,7 +73,7 @@ function App() {
   const [percentLimit,setPercentLimit] = useState(0)
 
   const init = async () => {
-    const data = await main(cake, token1V2,input*(10**36),percentLimit)
+    const data = await main(bnb, busd,input*(10**36),percentLimit)
     console.log("🚀 ~ file: App.js:59 ~ init ~ data", data)
     setDataRoute(data)
     const out = data.reduce((a,b)=>a+b.amountOut,0)/(10**36)
