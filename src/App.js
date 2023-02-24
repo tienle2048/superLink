@@ -83,7 +83,7 @@ function App() {
   
   const handleClick =()=>{
 
-    const percent = percentLimit>0 ? 0:0.001
+    const percent = percentLimit>0 ? 0:0.01
     setPercentLimit(percent)
   }
 

@@ -513,71 +513,8 @@ const getAddressToken0 = async (address) => {
     return await contract.methods.token0().call()
 }
 
-export const main = async (tokenA, tokenB,  amount = 100,optionPercent) => {
 
-
-
-    const allPoll = await findAllRoute(tokenA, tokenB)
-    console.log("🚀 ~ file: okla.js:521 ~ main ~ allPoll:", allPoll)
-
-
-    const RoutePoolDetail = await Promise.all(allPoll.map(async item => {
-        const route = await Promise.all(item.route.map(async routeItem => {
-            const subRoute1 = await Promise.all(routeItem.subRoute.map(async it => {
-                let { _reserve0, _reserve1 } = !it.amplificationCoefficient ? await getDetailPool(it.address) : { _reserve0: 1, _reserve1: 1 }
-                const address0 = !it.amplificationCoefficient ? await getAddressToken0(it.address) : routeItem.token0
-                if (address0 !== routeItem.token0) [_reserve0, _reserve1] = [_reserve1, _reserve0]
-
-                _reserve0 = _reserve0 * 10 ** (36 - routeItem.coins[0].decimals)
-                _reserve1 = _reserve1 * 10 ** (36 - routeItem.coins[1].decimals)
-                const maxAmountIn = _reserve0 * PRICE_IMPACT / (1 - PRICE_IMPACT)
-
-                return {
-                    ...it,
-                    _reserve0: _reserve0,
-                    _reserve1: _reserve1,
-                    rate: _reserve0 / _reserve1,
-                    maxAmount: maxAmountIn
-                }
-            }))
-            return {
-                subRoute: subRoute1,
-                namePair: routeItem.namePair,
-                token0: routeItem.token0,
-                token1: routeItem.token1,
-                coins: routeItem.coins
-            }
-        }))
-        return {
-            route: route
-        }
-    }))
-
-
-    console.log(RoutePoolDetail)
-
-
-    const calculatePercentRoute = RoutePoolDetail.map(item => {
-        item.route.map(routeItem => {
-            const totalLiqToken1 = routeItem.subRoute.reduce((a, b) => a + b._reserve1, 0)
-            const totalLiqToken0 = routeItem.subRoute.reduce((a, b) => a + b._reserve0, 0)
-            const averageRate = routeItem.subRoute.reduce((a, b) => a + parseFloat(b.rate), 0) / routeItem.subRoute.length
-            routeItem.estLiqToken1 = totalLiqToken1
-            routeItem.estLiqToken0 = totalLiqToken0
-            routeItem.averageRate = averageRate
-            routeItem.totalLiqToken1 = totalLiqToken1
-
-
-            routeItem.subRoute.map((it, index) => {
-                routeItem.subRoute[index] = {
-                    ...it,
-                    splicePercent: it._reserve1 / totalLiqToken1,
-
-                }
-            })
-        })
-    })
-
+const spliceAndCalAmountOut = (RoutePoolDetail,amount,optionPercent)=>{
 
     RoutePoolDetail.map(item => {
         item.route.map(routeItem => {
@@ -657,11 +594,15 @@ export const main = async (tokenA, tokenB,  amount = 100,optionPercent) => {
         }
     })
 
+    return spliceAmountInRoute
+}
 
+const calcAmountOut =(route)=>{
 
-
-    const spliceAmountInSubRoute = spliceAmountInRoute.map(item => {
+    route.map(item => {
         let okla
+        const getGasFee = item.route.reduce((a,b)=>a+b.subRoute.length,0)
+
         item.route.map((routeItem, index) => {
 
             if (index === 0) {
@@ -689,12 +630,133 @@ export const main = async (tokenA, tokenB,  amount = 100,optionPercent) => {
         })
 
         item.amountOut=okla
+        item.gas = getGasFee*0.5*10**36
     })
+
+    return route
+
+}
+
+const filterRouterByGas = (route,amount,optionPercent)=>{
+
+    const filterRouter = calcAmountOut(route)
+
+    
+
+    for (let i =0 ; i<route.length; i++){
+        const amountOut = filterRouter.reduce((a,b)=>a+b.amountOut,0)
+
+        const firstEle = filterRouter.shift()
+
+        const newRoute = spliceAndCalAmountOut(filterRouter,amount,optionPercent)
+
+        const newRouteAmountOut = calcAmountOut(newRoute)
+
+        const newAmountOut = newRouteAmountOut.reduce((a,b)=>a+b.amountOut,0)
+        console.log(amountOut-newAmountOut,firstEle.gas,filterRouter)
+
+        if((amountOut-newAmountOut)>firstEle.gas){
+            filterRouter.unshift(firstEle)
+            break
+        }
+
+    }
+
+    const newRouter = spliceAndCalAmountOut(filterRouter,amount,optionPercent)
+    const result =calcAmountOut(newRouter)
+
+
+
+    return result
+}
+
+
+
+export const main = async (tokenA, tokenB,  amount = 100,optionPercent) => {
+
+
+
+    const allPoll = await findAllRoute(tokenA, tokenB)
+    console.log("🚀 ~ file: okla.js:521 ~ main ~ allPoll:", allPoll)
+
+
+    const RoutePoolDetail = await Promise.all(allPoll.map(async item => {
+        const route = await Promise.all(item.route.map(async routeItem => {
+            const subRoute1 = await Promise.all(routeItem.subRoute.map(async it => {
+                let { _reserve0, _reserve1 } = !it.amplificationCoefficient ? await getDetailPool(it.address) : { _reserve0: 1, _reserve1: 1 }
+                const address0 = !it.amplificationCoefficient ? await getAddressToken0(it.address) : routeItem.token0
+                if (address0 !== routeItem.token0) [_reserve0, _reserve1] = [_reserve1, _reserve0]
+
+                _reserve0 = _reserve0 * 10 ** (36 - routeItem.coins[0].decimals)
+                _reserve1 = _reserve1 * 10 ** (36 - routeItem.coins[1].decimals)
+                const maxAmountIn = _reserve0 * PRICE_IMPACT / (1 - PRICE_IMPACT)
+
+                return {
+                    ...it,
+                    _reserve0: _reserve0,
+                    _reserve1: _reserve1,
+                    rate: _reserve0 / _reserve1,
+                    maxAmount: maxAmountIn
+                }
+            }))
+            return {
+                subRoute: subRoute1,
+                namePair: routeItem.namePair,
+                token0: routeItem.token0,
+                token1: routeItem.token1,
+                coins: routeItem.coins
+            }
+        }))
+        return {
+            route: route
+        }
+    }))
+
+
+    console.log(RoutePoolDetail)
+
+
+    const calculatePercentRoute = RoutePoolDetail.map(item => {
+        item.route.map(routeItem => {
+            const totalLiqToken1 = routeItem.subRoute.reduce((a, b) => a + b._reserve1, 0)
+            const totalLiqToken0 = routeItem.subRoute.reduce((a, b) => a + b._reserve0, 0)
+            const averageRate = routeItem.subRoute.reduce((a, b) => a + parseFloat(b.rate), 0) / routeItem.subRoute.length
+            routeItem.estLiqToken1 = totalLiqToken1
+            routeItem.estLiqToken0 = totalLiqToken0
+            routeItem.averageRate = averageRate
+            routeItem.totalLiqToken1 = totalLiqToken1
+
+
+            routeItem.subRoute.map((it, index) => {
+                routeItem.subRoute[index] = {
+                    ...it,
+                    splicePercent: it._reserve1 / totalLiqToken1,
+
+                }
+            })
+        })
+    })
+
+
+    const spliceAmountInRoute = spliceAndCalAmountOut(RoutePoolDetail,amount,optionPercent)
+
+    const sortByPercent = spliceAmountInRoute.sort((a,b)=>a.splicePercent-b.splicePercent)
+
+    const filterByGas =filterRouterByGas(sortByPercent,amount,optionPercent)
+
+
+
+
+
 
     console.log(spliceAmountInRoute.reduce((a,b)=>a+b.amountOut,0)/(10**36))
 
+    
+
+    
 
 
+    console.log(filterByGas.reduce((a,b)=>a+b.amountOut,0)/(10**36))
 
  /*    for (let item = 0; item < spliceAmountInRoute.length; item++) {
         for (let routeItem = 0; routeItem < spliceAmountInRoute[item].route.length; routeItem++) {
@@ -704,7 +766,7 @@ export const main = async (tokenA, tokenB,  amount = 100,optionPercent) => {
         }
     }
  */
-    return spliceAmountInRoute
+    return filterByGas
 
 
 }
