@@ -5,6 +5,9 @@ const Web3 = require('web3')
 //const web3 = new Web3("https://nd-568-863-669.p2pify.com/2dfeb3634054cc14d8a64a528431a652")
 const web3 = new Web3("https://mainnet.infura.io/v3/92d53cee52834368b0fabb42fa1b5570")
 const web3duphong = new Web3("https://singapore.rpc.blxrbdn.com	")
+
+
+
 const { getCreate2Address } = require('@ethersproject/address')
 const { pack, keccak256 } = require('@ethersproject/solidity')
 const { Trade, JSBI, Token, Pair, Percent, CurrencyAmount, TokenAmount } = require('@uniswap/sdk')
@@ -372,6 +375,7 @@ const tokenTrungGian = [
     { chainId: 1, address: '0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2', decimals: 18, symbol: 'MKR', name: 'Maker}', usdPrice: 50 }
 ]
 
+const listPoolCurveV1 = []
 
 const POOL_TYPE = {
     uniV2: 'uniV2',
@@ -419,6 +423,9 @@ const getAddressPoolCurveV1 = async (DataTokenA, DataTokenB, listDataPool) => {
     })
         .filter(item => item.assetTypeName === 'usd')
         .map(item => { return { ...item, type: POOL_TYPE.curveV1, name: item.name ? item.name : "noName" } })
+
+    listPoolCurveV1.push(...listPoolforPair)
+
     return listPoolforPair
 }
 
@@ -880,6 +887,8 @@ export const main = async (tokenA, tokenB, amount = 10000000) => {
             amountOut:amountOut
         }
     })
+
+    console.log(listPoolCurveV1)
     return resultRoute
 }
 

@@ -1,10 +1,19 @@
 import logo from './logo.svg';
 import './App.css';
-import { main } from './okla';
+import { main } from './curvev1';
 import { useEffect, useState } from 'react'
+import { POOL_TYPE } from './curvev1/constants';
 
 
 const SubPool = ({ dataSubRoute }) => {
+
+  const colorOfType = {
+    [POOL_TYPE.uniV2]:'red',
+    [POOL_TYPE.uniV3]:'green',
+    [POOL_TYPE.curveV1]:'blue',
+    [POOL_TYPE.curveV2]:'yellow'
+  }
+
   return (
     <div className='subpool'>
       <div>
@@ -16,12 +25,12 @@ const SubPool = ({ dataSubRoute }) => {
           return (
             <div className='item-pool'>
               <span className='namePool'>
-                <a href={`https://bscscan.com/address/${item.address}`} target="_blank">
+                <a href={`https://etherscan.io/address/${item.address}`} target="_blank">
                   {item.namePool ? item.namePool : item.name}
                 </a>
 
 
-                <span>  {item.type}</span>
+                <span style={{ color: `${colorOfType[item.type]}` }}>  {item.type}</span>
               </span>
               {/* <span>{item.maxAmount}</span> */}
 
@@ -73,7 +82,7 @@ function App() {
   const [percentLimit,setPercentLimit] = useState(0)
 
   const init = async () => {
-    const data = await main(bnb, busd,input*(10**36),percentLimit)
+    const data = await main(token0, token1,input*(10**36),percentLimit)
     console.log("🚀 ~ file: App.js:59 ~ init ~ data", data)
     setDataRoute(data)
     const out = data.reduce((a,b)=>a+b.amountOut,0)/(10**36)
@@ -103,7 +112,7 @@ function App() {
         {dataRoute.map(item => <PoolCard dataRoute={item.route} percent={item.splicePercent} />)}
       </div>
       <div className='input-amount'>
-        <button onClick={handleClick} style={{cursor:'pointer'}}>Filter Router</button>
+        
         <div className='input-amount_card'>
           <div className='input'>
             <input value={input} onChange={e=>setInput(e.target.value)}></input>
