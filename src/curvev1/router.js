@@ -12,7 +12,7 @@ const getListAddressPool = async (addressTokenA, addressTokenB , chain,listPoolC
 
     const arrAddressPoolCurveV2 = await getAddressPoolCurveV2(addressTokenA, addressTokenB, listDataPool,chain)
 
-    const arrAddressPoolUniV3 = await getAddressPoolUniv3(addressTokenA, addressTokenB,chain)
+    const arrAddressPoolUniV3 =[]// await getAddressPoolUniv3(addressTokenA, addressTokenB,chain)
 
     listPoolCurveV1.push(...arrAddressPoolCurveV1)
     const resultArr = [...arrAddressPoolUniV2, ...arrAddressPoolUniV3,...arrAddressPoolCurveV2]

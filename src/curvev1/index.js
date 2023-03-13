@@ -1,6 +1,6 @@
 import { POOL_TYPE } from './constants'
 import { calcAmountOutCurvev1, calculateAmountTradedCurveV1, getReservePoolCurveV1 } from './curveV1'
-import { calcAmountOutCurvev2, getReservePoolCurveV2 } from './curveV2'
+import { calcAmountOutCurvev2, calculateAmountTradedCurveV2, getReservePoolCurveV2 } from './curveV2'
 import { findAllRoute } from './router'
 import { calcAmountOutUniV2, calculateAmountTradedUniV2, getReservePoolUniV2 } from './uniV2'
 import { calcAmountOutUniV3, getReservePoolUniV3 } from './uniV3'
@@ -39,9 +39,9 @@ const calculateAmountTraded = (priceImpactEst, type, dataPool, coins, indexToken
         case POOL_TYPE.curveV1:
             return calculateAmountTradedCurveV1(priceImpactEst, dataPool, coins, indexTokenCurve)
         case POOL_TYPE.uniV3:
-            return 1
+            return 0
         case POOL_TYPE.curveV2:
-            return 1
+            return calculateAmountTradedCurveV2(priceImpactEst, dataPool, coins, indexTokenCurve)
         default:
             return 0
     }
@@ -58,8 +58,8 @@ const calculateAmountOut = (amountIn, type, reserve, otherParam) => {
             return calcAmountOutUniV2(amountIn, reserve[0], reserve[1])
         case POOL_TYPE.curveV1:
             return calcAmountOutCurvev1(amountIn, reserve, otherParam)
-        case POOL_TYPE.uniV3:
-            return calcAmountOutUniV3(amountIn, reserve, otherParam)
+        /* case POOL_TYPE.uniV3:
+            return calcAmountOutUniV3(amountIn, reserve, otherParam) */
         case POOL_TYPE.curveV2:
             return calcAmountOutCurvev2(amountIn, reserve, otherParam)
         default:
@@ -68,36 +68,18 @@ const calculateAmountOut = (amountIn, type, reserve, otherParam) => {
 }
 
 const spliceAndCalculateOutput = (amountIn, route) => {
-    const poolCurve = route.filter(item => item.type === POOL_TYPE.curveV1).reduce((a, b) => a + b.amountTradedEst, 0)
-
-    const totalUniV2 = route.filter(item => item.type === POOL_TYPE.uniV2).reduce((a, b) => a + b.amountTradedEst, 0)
-    const totalCurve = route.filter(item => item.type === POOL_TYPE.curveV1).reduce((a, b) => a + b.amountTradedEst, 0)
-
-    const phandu = amountIn - poolCurve
-    let phantramCurve
-    let phantramV2
-    if (phandu < 0) {
-        phantramCurve = 1
-    }
-    else {
-        phantramCurve = poolCurve / amountIn
-        phantramV2 = 1 - phantramCurve
-    }
+    const poolCurve = route.reduce((a, b) => a + b.amountTradedEst, 0)
 
     const okla = route.map(item => {
 
-        const ecec = item.type === POOL_TYPE.uniV2 ? phantramV2 : phantramCurve
+        const splicePercent = item.amountTradedEst / poolCurve
 
-        const ecec1 = item.type === POOL_TYPE.uniV2 ? totalUniV2 : totalCurve
-
-        const splicePercent = ecec * item.amountTradedEst / ecec1
-
-        const amountInPerPool = splicePercent * amountIn
+        const amountInPerPool = item.amountTradedEst * amountIn / poolCurve
 
         const otherParam = {
-            i: 0,
-            j: 2,
-            A:item?.A,
+            i: item?.i,
+            j: item?.j,
+            A: item?.A,
             fee: item?.fee,
             coins: item.coins,
             D: item?.D,
@@ -122,6 +104,16 @@ const spliceAndCalculateOutput = (amountIn, route) => {
 }
 
 
+const getIndexPoolCurve = (coins, coinsRoute) => {
+    const addressCoins = coins.map(item => item.address.toUpperCase())
+    const addressCoinsRoute = coinsRoute.map(item => item.address.toUpperCase())
+    const i = addressCoins.indexOf(addressCoinsRoute[0].toUpperCase())
+    const j = addressCoins.indexOf(addressCoinsRoute[1].toUpperCase())
+    return {
+        i, j
+    }
+}
+
 
 
 export const main = async (tokenA, tokenB, amount = 10000000, chain) => {
@@ -140,14 +132,15 @@ export const main = async (tokenA, tokenB, amount = 10000000, chain) => {
         const route = await Promise.all(item.route.map(async routeItem => {
             const subRoute1 = await Promise.all(routeItem.subRoute.map(async it => {
                 const coins = it.coins ? it.coins : routeItem.coins
-
-
+                const { i, j } = getIndexPoolCurve(coins, routeItem.coins)
                 const indexCurve = getIndexTokenCurve(coins, routeItem.coins[1].address)
                 const detail = await getDetailPool(it.address, it.type, coins)
                 const amountTradedEst = calculateAmountTraded(0.3, it.type, detail.reserve, coins, indexCurve)
                 return {
                     ...it,
                     ...detail,
+                    i: i,
+                    j: j,
                     amountTradedEst: amountTradedEst
                 }
             }))
@@ -168,9 +161,13 @@ export const main = async (tokenA, tokenB, amount = 10000000, chain) => {
                 return isSwapStableCoin
             }).map(item => {
                 const indexCurve = getIndexTokenCurve(item.coins, routeItem.coins[1].address)
+                const coins = item.coins ? item.coins : routeItem.coins
+                const { i, j } = getIndexPoolCurve(coins, routeItem.coins)
                 const amountTradedEst = calculateAmountTraded(0.3, item.type, item.reserve, item.coins, indexCurve)
                 return {
                     ...item,
+                    i: i,
+                    j: j,
                     amountTradedEst: amountTradedEst
                 }
             })

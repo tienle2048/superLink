@@ -36,6 +36,7 @@ export const getReservePoolUniV2 = async (address, coins) => {
     const [decimal0, decimal1] = [10 ** (36 - coins[0].decimals), 10 ** (36 - coins[1].decimals)]
 
     const data = {
+        rate:_reserve0/_reserve1,
         reserve:[_reserve0 * decimal0, _reserve1 * decimal1]
     }
 

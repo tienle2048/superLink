@@ -245,7 +245,12 @@ const get_dy = (i, j, dx, priceScale, balances, A, gamma, D) => {
 
 export const calcAmountOutCurvev2 = (amountIn, reserve, otherParam) => {
     const { A, D, priceScale, gamma, i, j } = otherParam
-    return get_dy(i, j, 10000000000n, priceScale, reserve, A, gamma, BigInt(D))
+
+    const amountInConvertBigInt =BigInt(Math.floor(amountIn/(10**36)*10**6))
+
+    const amountOut = get_dy(i, j, amountInConvertBigInt, priceScale, reserve, A, gamma, BigInt(D))
+    console.log("🚀 ~ file: curveV2.js:252 ~ calcAmountOutCurvev2 ~ amountOut:", amountOut)
+    return Number(amountOut)*10**18
 }
 
 
@@ -320,4 +325,15 @@ export const getReservePoolCurveV2 = async (address, coins) => {
         gamma: BigInt(gamma),
         D: BigInt(D)
     }
+}
+
+export const calculateAmountTradedCurveV2 =(priceImpactEst, dataPool, coins, indexCurve)=>{
+    let amount
+
+    try {
+        amount = dataPool[indexCurve]*10**18 * 0.96 * coins[indexCurve].usdPrice
+    } catch (error) {
+        console.log(coins, indexCurve)
+    }
+    return amount
 }

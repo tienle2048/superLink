@@ -65,6 +65,7 @@ export const getAddressPoolCurveV1 = async (DataTokenA, DataTokenB, listDataPool
 }
 
 export const getReservePoolCurveV1 = async (address, coins) => {
+    
     const contract = new web3.eth.Contract(
         ABI.POOL_CURVE_V1,
         address
@@ -88,6 +89,8 @@ export const getReservePoolCurveV1 = async (address, coins) => {
         .catch(res => {
             return coins.map(item => 1)
         })
+
+
 
     const realBalances = balances.map((item, index) => item * exchangeRate[index] * 10 ** (36 - coins[index].decimals))
     return { reserve: realBalances }

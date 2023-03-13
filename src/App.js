@@ -36,7 +36,7 @@ const SubPool = ({ dataSubRoute }) => {
 
 
               <span>{item.splicePercent * 100}%</span>
-              {/* <span>{item.rate}</span> */}
+              <span>{item?.rate}</span>
             </div>
           )
         })}
