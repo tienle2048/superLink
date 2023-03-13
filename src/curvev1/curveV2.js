@@ -244,13 +244,10 @@ const get_dy = (i, j, dx, priceScale, balances, A, gamma, D) => {
 }
 
 export const calcAmountOutCurvev2 = (amountIn, reserve, otherParam) => {
-    const { A, D, priceScale, gamma, i, j } = otherParam
-
-    const amountInConvertBigInt =BigInt(Math.floor(amountIn/(10**36)*10**6))
-
+    const { A, D, priceScale,decimals, gamma, i, j } = otherParam
+    const amountInConvertBigInt =BigInt(Math.floor(amountIn/(10**36)*10**decimals[i]))
     const amountOut = get_dy(i, j, amountInConvertBigInt, priceScale, reserve, A, gamma, BigInt(D))
-    console.log("🚀 ~ file: curveV2.js:252 ~ calcAmountOutCurvev2 ~ amountOut:", amountOut)
-    return Number(amountOut)*10**18
+    return Number(amountOut)*10**(36-decimals[j])
 }
 
 
@@ -274,7 +271,7 @@ export const getDataPoolCurveV2 = async () => {
 }
 
 
-export const getAddressPoolCurveV2 = async (DataTokenA, DataTokenB, listDataPool) => {
+export const getAddressPoolCurveV2noFac = async (DataTokenA, DataTokenB, listDataPool) => {
     if (DataTokenA.address.toUpperCase() === DataTokenB.address.toUpperCase()) return []
 
     const listPoolforPair = listDataPool.filter(item => {
@@ -292,6 +289,28 @@ export const getAddressPoolCurveV2 = async (DataTokenA, DataTokenB, listDataPool
             }
         })
     return listPoolforPair
+}
+
+export const getAddressPoolCurveV2= async(TokenA, TokenB) => {
+    
+    const FACTORY_ADDRESS_CURVE_V2 = [{ factory: "0xF18056Bbd320E96A48e3Fbf8bC061322531aac99", name: "curveV2 factory" }]
+
+    const arrAddressPool = await Promise.all(
+        FACTORY_ADDRESS_CURVE_V2.map(async (item) => {
+            const contract = new web3.eth.Contract(
+                ABI.FACTORY_CURVE_V2,
+                item.factory
+            );
+            return await contract.methods.find_pool_for_coins(TokenA.address, TokenB.address).call().then(res => {
+                return {
+                    namePool: item.name,
+                    address: res,
+                }
+            })
+        })
+    )
+    let resultArr = arrAddressPool.filter(item => parseInt(item.address, 16) !== 0).map(item => { return { ...item, type: POOL_TYPE.curveV2Fac } })
+    return resultArr
 }
 
 export const getReservePoolCurveV2 = async (address, coins) => {
@@ -327,6 +346,39 @@ export const getReservePoolCurveV2 = async (address, coins) => {
     }
 }
 
+export const getReservePoolCurveV2Fac = async (address,coins)=>{
+    const contract = new web3.eth.Contract(
+        ABI.POOL_CURVE_V2_FAC,
+        address
+    );
+    const priceScaleStart = new Array(coins.length - 1).fill(0)
+
+    const priceScale = await Promise.all(priceScaleStart.map(async (item, index) => {
+        const itemPriceScale = await contract.methods.price_scale().call()
+
+        return itemPriceScale
+    }))
+
+    const balances = await Promise.all(coins.map(async (item, index) => {
+        return await contract.methods.balances(index).call()
+    }))
+        .then(res => res)
+        .catch(res => {
+            return coins.map(item => 0)
+        })
+
+    const gamma = await contract.methods.gamma().call()
+
+    const D = await contract.methods.D().call()
+
+    return {
+        reserve: balances,
+        priceScale: priceScale,
+        gamma: BigInt(gamma),
+        D: BigInt(D)
+    }
+}
+
 export const calculateAmountTradedCurveV2 =(priceImpactEst, dataPool, coins, indexCurve)=>{
     let amount
 
@@ -336,4 +388,21 @@ export const calculateAmountTradedCurveV2 =(priceImpactEst, dataPool, coins, ind
         console.log(coins, indexCurve)
     }
     return amount
+}
+
+export const calcRateCurveV2 = (info,i,j)=> {
+    const AMOUNT_CALC_RATE = 1
+    const {reserve,A,fee,decimals,D,priceScale,gamma} = info
+    console.log("🚀 ~ file: curveV2.js:345 ~ calcRateCurveV2 ~ info:", info,i,j)
+    const otherParam = {
+        i:j,
+        j:i,
+        A,fee,decimals,D,priceScale,gamma
+    }
+    const amountIn = AMOUNT_CALC_RATE * 10**36
+    const amountOut = calcAmountOutCurvev2(amountIn,reserve,otherParam)
+    console.log("🚀 ~ file: curveV2.js:353 ~ calcRateCurveV2 ~ amountOut:", amountOut ,10**decimals[j])
+    const rate = amountIn/Number(amountOut)
+
+    return rate
 }

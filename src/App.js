@@ -64,8 +64,10 @@ const PoolCard = ({ dataRoute, percent }) => {
 function App() {
 
 
-  const token0 = { "chainId": 56, "decimals": 6, "address": "0xdac17f958d2ee523a2206206994597c13d831ec7", "symbol": "usdt" ,usdPrice:1}
-  const token1 = { "chainId": 56, "decimals": 18, "address": "0x6b175474e89094c44da98b954eedeac495271d0f", "symbol": "dai" ,usdPrice:1}
+  const usdt = { "chainId": 56, "decimals": 6, "address": "0xdac17f958d2ee523a2206206994597c13d831ec7", "symbol": "usdt" ,usdPrice:1}
+  const dai = { "chainId": 56, "decimals": 18, "address": "0x6b175474e89094c44da98b954eedeac495271d0f", "symbol": "dai" ,usdPrice:1}
+  const frax ={ "chainId": 56, "decimals": 18, "address": "0x853d955aCEf822Db058eb8505911ED77F175b99e", "symbol": "frax" ,usdPrice:1}
+  const usdc={ chainId: 1, address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', decimals: 6, symbol: 'USDC', name: 'USD//C', usdPrice: 1 }
 
   const cake ={ address:"0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82","chainId": 56, "decimals": 18, "symbol": "CAKE"}
   const dodo ={ address:"0x67ee3Cb086F8a16f34beE3ca72FAD36F7Db929e2","chainId": 56, "decimals": 18, "symbol": "DODO"}
@@ -82,7 +84,7 @@ function App() {
   const [percentLimit,setPercentLimit] = useState(0)
 
   const init = async () => {
-    const data = await main(token0, token1,input*(10**36),percentLimit)
+    const data = await main(usdt, dai,input*(10**36),percentLimit)
     console.log("🚀 ~ file: App.js:59 ~ init ~ data", data)
     setDataRoute(data)
     const out = data.reduce((a,b)=>a+b.amountOut,0)/(10**36)
