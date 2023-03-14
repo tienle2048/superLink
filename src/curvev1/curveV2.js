@@ -257,7 +257,7 @@ export const getDataPoolCurveV2 = async () => {
         .then((response) => response.json())
         .then(res => res.data.poolData)
 
-    console.log(dataApi)
+    
 
     const data = dataApi.map(item => {
         return {
@@ -391,9 +391,9 @@ export const calculateAmountTradedCurveV2 =(priceImpactEst, dataPool, coins, ind
 }
 
 export const calcRateCurveV2 = (info,i,j)=> {
-    const AMOUNT_CALC_RATE = 1
+    const AMOUNT_CALC_RATE = 0.001
     const {reserve,A,fee,decimals,D,priceScale,gamma} = info
-    console.log("🚀 ~ file: curveV2.js:345 ~ calcRateCurveV2 ~ info:", info,i,j)
+    
     const otherParam = {
         i:j,
         j:i,
@@ -401,7 +401,7 @@ export const calcRateCurveV2 = (info,i,j)=> {
     }
     const amountIn = AMOUNT_CALC_RATE * 10**36
     const amountOut = calcAmountOutCurvev2(amountIn,reserve,otherParam)
-    console.log("🚀 ~ file: curveV2.js:353 ~ calcRateCurveV2 ~ amountOut:", amountOut ,10**decimals[j])
+    
     const rate = amountIn/Number(amountOut)
 
     return rate

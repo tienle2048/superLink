@@ -204,12 +204,11 @@ export const calcAmountOutCurvev1 = (amountIn, reserve, otherParam) => {
     return amountOut
 }
 
-
 export const calcRateCurveV1 = (info,i,j)=> {
-    const AMOUNT_CALC_RATE = 1
+    const AMOUNT_CALC_RATE = 0.001
     const {reserve,A,fee,decimals} = info
     const otherParam = {
-        i,j,A,fee
+        i,j,A,fee,decimals
     }
     const amountIn = AMOUNT_CALC_RATE * 10**(36)
     const amountOut = calcAmountOutCurvev1(amountIn,reserve,otherParam)/10**(36)
