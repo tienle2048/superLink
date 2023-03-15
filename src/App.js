@@ -80,16 +80,13 @@ function App() {
 
 
   const [dataRoute, setDataRoute] = useState([])
-  const [input,setInput] = useState(0)
+  const [input,setInput] = useState(1)
   const [outPut,setOutPut] =useState(0)
   const [percentLimit,setPercentLimit] = useState(0)
 
-  const init = async () => {
-    const data = await main(usdt, eth,input*(10**36),percentLimit)
+  const init = async (callback) => {
+    const data = await main( usdt,eth,input*(10**36),percentLimit,callback)
     
-    setDataRoute(data)
-    const out = data.reduce((a,b)=>a+b.amountOut,0)/(10**36)
-    setOutPut(out)
   }
 
   
@@ -99,9 +96,14 @@ function App() {
     setPercentLimit(percent)
   }
 
+  const callback=(data,out)=>{
+    setDataRoute(data)
+    setOutPut(out)
+  }
+
   useEffect(() => {
     const a = setTimeout(()=>{
-      init()
+      init(callback)
     },200)
 
     return ()=>{

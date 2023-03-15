@@ -43,9 +43,10 @@ export const getReservePoolUniV2 = async (address, coins) => {
     return data
 }
 
-export const calculateAmountTradedUniV2 = (priceImpactEst, dataPool, coins) => {
+export const calculateAmountTradedUniV2 = (priceImpactEst, dataPool) => {
+    const {reserve,coins} = dataPool
 
-    const _reserve0 = dataPool[0]
+    const _reserve0 = reserve[0]
     const amountTraded = (_reserve0 * priceImpactEst) / ((1 - priceImpactEst) * (1 - 0.0025))
 
     return amountTraded * coins[0].usdPrice

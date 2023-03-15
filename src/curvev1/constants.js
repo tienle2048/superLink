@@ -343,7 +343,7 @@ export const LIST_FACTORY_ACCRESS = {
         {
             name: "UniswapV2",
             route: "0x03f7724180AA6b939894B5Ca4314783B0b36b329",
-            factory: "0x115934131916c8b277dd010ee02de363c09d037c",
+            factory: "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
             initCode: "0x65d1a3b1e46c6e4f1be1ad5f99ef14dc488ae0549dc97db9b30afe2241ce1c7a"
         },
         {
@@ -387,7 +387,7 @@ export const tokenTrungGian = [
 ] */
 
 export const tokenTrungGian = [
-    { chainId: 1, address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', decimals: 18, symbol: 'ETH', name: 'Ether', usdPrice: 1662.68 },
+    { chainId: 1, address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', decimals: 18, symbol: 'ETH', name: 'Ether', usdPrice: 1697 },
     { chainId: 1, address: '0x6B175474E89094C44Da98b954EedeAC495271d0F', decimals: 18, symbol: 'DAI', name: 'Dai Stablecoin', usdPrice: 1 },
     { chainId: 1, address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', decimals: 6, symbol: 'USDC', name: 'USD//C', usdPrice: 1 },
     { chainId: 1, address: '0xdAC17F958D2ee523a2206206994597C13D831ec7', decimals: 6, symbol: 'USDT', name: 'Tether USD', usdPrice: 1 },

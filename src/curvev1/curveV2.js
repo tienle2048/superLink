@@ -379,15 +379,36 @@ export const getReservePoolCurveV2Fac = async (address,coins)=>{
     }
 }
 
-export const calculateAmountTradedCurveV2 =(priceImpactEst, dataPool, coins, indexCurve)=>{
-    let amount
+export const calculateAmountTradedCurveV2 =(priceImpactEst, dataPool)=>{
+    const {i,j,coins,reserve,rate,address,decimals}= dataPool
+    let cantren = reserve[j] * 10**(36-decimals[j]) / rate
+    let canduoi = 0.01 * 10 ** 36
 
-    try {
-        amount = dataPool[indexCurve]*10**18 * 0.96 * coins[indexCurve].usdPrice
-    } catch (error) {
-        console.log(coins, indexCurve)
+    let isLoop = true
+    let index = 0
+
+
+    while (isLoop) {
+        index++
+        if(index ===100) return 0
+        const amountIn = (cantren + canduoi) / 2
+        
+        const amountOut = calcAmountOutCurvev2(amountIn, reserve, dataPool)
+        const priceMarket = amountOut / amountIn
+        const priceImpact = 1 - priceMarket / rate
+        
+        if(priceImpact===NaN){
+            console.log(address, amountIn, canduoi, cantren, priceImpact, index)
+            return 0
+        }
+        if (Math.abs(priceImpact - priceImpactEst) < 0.00001) {
+            isLoop = false
+            return amountIn*coins[i].usdPrice
+        }
+        if (priceImpact - priceImpactEst > 0) cantren = amountIn
+        if (priceImpact - priceImpactEst < 0) canduoi = amountIn
     }
-    return amount
+
 }
 
 export const calcRateCurveV2 = (info,i,j)=> {
