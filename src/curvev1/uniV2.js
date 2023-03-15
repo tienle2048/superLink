@@ -1,7 +1,7 @@
 import { ABI, LIST_FACTORY_ACCRESS } from "./constants";
 import { web3 } from "./web3";
 
-export const getAddressPoolUniV2= async (TokenA,TokenB)=>{
+export const getAddressPoolUniV2 = async (TokenA, TokenB) => {
     const arrAddressPool = await Promise.all(
         LIST_FACTORY_ACCRESS.eth.map(async (item) => {
             const contract = new web3.eth.Contract(
@@ -36,19 +36,21 @@ export const getReservePoolUniV2 = async (address, coins) => {
     const [decimal0, decimal1] = [10 ** (36 - coins[0].decimals), 10 ** (36 - coins[1].decimals)]
 
     const data = {
-        reserve:[_reserve0 * decimal0, _reserve1 * decimal1]
+        rate: (_reserve1 * decimal1) / (_reserve0 * decimal0),
+        reserve: [_reserve0 * decimal0, _reserve1 * decimal1]
     }
 
     return data
 }
 
-export const calculateAmountTradedUniV2 = (priceImpactEst, dataPool, coins) => {
+export const calculateAmountTradedUniV2 = (priceImpactEst, dataPool) => {
+    const {reserve,coins} = dataPool
 
-    const _reserve0 = dataPool[0]
+    const _reserve0 = reserve[0]
     const amountTraded = (_reserve0 * priceImpactEst) / ((1 - priceImpactEst) * (1 - 0.0025))
 
     return amountTraded * coins[0].usdPrice
-} 
+}
 
 export const calcAmountOutUniV2 = (amountIn, reserveIn, reserveOut) => {
     const amountInWithFee = amountIn * 0.9975

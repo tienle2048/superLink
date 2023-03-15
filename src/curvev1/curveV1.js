@@ -65,6 +65,7 @@ export const getAddressPoolCurveV1 = async (DataTokenA, DataTokenB, listDataPool
 }
 
 export const getReservePoolCurveV1 = async (address, coins) => {
+    
     const contract = new web3.eth.Contract(
         ABI.POOL_CURVE_V1,
         address
@@ -89,19 +90,39 @@ export const getReservePoolCurveV1 = async (address, coins) => {
             return coins.map(item => 1)
         })
 
+
+
     const realBalances = balances.map((item, index) => item * exchangeRate[index] * 10 ** (36 - coins[index].decimals))
     return { reserve: realBalances }
 }
 
-export const calculateAmountTradedCurveV1 = (priceImpactEst, dataPool, coins, indexCurve) => {
-    let amount
+export const calculateAmountTradedCurveV1 = (priceImpactEst, dataPool) => {
+    const {i,j,coins,reserve,rate,address}= dataPool
+    let cantren = reserve[j] * 10 / rate
+    let canduoi = 0.01 * 10 ** 36
 
-    try {
-        amount = dataPool[indexCurve] * 0.96 * coins[indexCurve].usdPrice
-    } catch (error) {
-        console.log(coins, indexCurve)
+    let isLoop = true
+    let index = 0
+
+
+    while (isLoop) {
+        index++
+        if(index ===100) return 0
+        const amountIn = (cantren + canduoi) / 2
+        const amountOut = calcAmountOutCurvev1(amountIn, reserve, dataPool)
+        const priceMarket = amountOut / amountIn
+        const priceImpact = 1 - priceMarket / rate
+        if(priceImpact===NaN){
+            console.log(address, amountIn, canduoi, cantren, priceImpact, index)
+            return 0
+        }
+        if (Math.abs(priceImpact - priceImpactEst) < 0.00001) {
+            isLoop = false
+            return amountIn*coins[i].usdPrice
+        }
+        if (priceImpact - priceImpactEst > 0) cantren = amountIn
+        if (priceImpact - priceImpactEst < 0) canduoi = amountIn
     }
-    return amount
 }
 
 export const calcAmountOutCurvev1 = (amountIn, reserve, otherParam) => {
@@ -200,3 +221,20 @@ export const calcAmountOutCurvev1 = (amountIn, reserve, otherParam) => {
 
     return amountOut
 }
+
+
+
+
+
+export const calcRateCurveV1 = (info,i,j)=> {
+    const AMOUNT_CALC_RATE = 0.001
+    const {reserve,A,fee,decimals} = info
+    const otherParam = {
+        i,j,A,fee,decimals
+    }
+    const amountIn = AMOUNT_CALC_RATE * 10**(36)
+    const amountOut = calcAmountOutCurvev1(amountIn,reserve,otherParam)/10**(36)
+    const rate = amountOut/AMOUNT_CALC_RATE
+    return rate
+}
+

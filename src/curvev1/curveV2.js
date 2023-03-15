@@ -244,8 +244,10 @@ const get_dy = (i, j, dx, priceScale, balances, A, gamma, D) => {
 }
 
 export const calcAmountOutCurvev2 = (amountIn, reserve, otherParam) => {
-    const { A, D, priceScale, gamma, i, j } = otherParam
-    return get_dy(i, j, 10000000000n, priceScale, reserve, A, gamma, BigInt(D))
+    const { A, D, priceScale,decimals, gamma, i, j } = otherParam
+    const amountInConvertBigInt =BigInt(Math.floor(amountIn/(10**36)*10**decimals[i]))
+    const amountOut = get_dy(i, j, amountInConvertBigInt, priceScale, reserve, A, gamma, BigInt(D))
+    return Number(amountOut)*10**(36-decimals[j])
 }
 
 
@@ -255,7 +257,7 @@ export const getDataPoolCurveV2 = async () => {
         .then((response) => response.json())
         .then(res => res.data.poolData)
 
-    console.log(dataApi)
+    
 
     const data = dataApi.map(item => {
         return {
@@ -269,7 +271,7 @@ export const getDataPoolCurveV2 = async () => {
 }
 
 
-export const getAddressPoolCurveV2 = async (DataTokenA, DataTokenB, listDataPool) => {
+export const getAddressPoolCurveV2noFac = async (DataTokenA, DataTokenB, listDataPool) => {
     if (DataTokenA.address.toUpperCase() === DataTokenB.address.toUpperCase()) return []
 
     const listPoolforPair = listDataPool.filter(item => {
@@ -287,6 +289,28 @@ export const getAddressPoolCurveV2 = async (DataTokenA, DataTokenB, listDataPool
             }
         })
     return listPoolforPair
+}
+
+export const getAddressPoolCurveV2= async(TokenA, TokenB) => {
+    
+    const FACTORY_ADDRESS_CURVE_V2 = [{ factory: "0xF18056Bbd320E96A48e3Fbf8bC061322531aac99", name: "curveV2 factory" }]
+
+    const arrAddressPool = await Promise.all(
+        FACTORY_ADDRESS_CURVE_V2.map(async (item) => {
+            const contract = new web3.eth.Contract(
+                ABI.FACTORY_CURVE_V2,
+                item.factory
+            );
+            return await contract.methods.find_pool_for_coins(TokenA.address, TokenB.address).call().then(res => {
+                return {
+                    namePool: item.name,
+                    address: res,
+                }
+            })
+        })
+    )
+    let resultArr = arrAddressPool.filter(item => parseInt(item.address, 16) !== 0).map(item => { return { ...item, type: POOL_TYPE.curveV2Fac } })
+    return resultArr
 }
 
 export const getReservePoolCurveV2 = async (address, coins) => {
@@ -320,4 +344,86 @@ export const getReservePoolCurveV2 = async (address, coins) => {
         gamma: BigInt(gamma),
         D: BigInt(D)
     }
+}
+
+export const getReservePoolCurveV2Fac = async (address,coins)=>{
+    const contract = new web3.eth.Contract(
+        ABI.POOL_CURVE_V2_FAC,
+        address
+    );
+    const priceScaleStart = new Array(coins.length - 1).fill(0)
+
+    const priceScale = await Promise.all(priceScaleStart.map(async (item, index) => {
+        const itemPriceScale = await contract.methods.price_scale().call()
+
+        return itemPriceScale
+    }))
+
+    const balances = await Promise.all(coins.map(async (item, index) => {
+        return await contract.methods.balances(index).call()
+    }))
+        .then(res => res)
+        .catch(res => {
+            return coins.map(item => 0)
+        })
+
+    const gamma = await contract.methods.gamma().call()
+
+    const D = await contract.methods.D().call()
+
+    return {
+        reserve: balances,
+        priceScale: priceScale,
+        gamma: BigInt(gamma),
+        D: BigInt(D)
+    }
+}
+
+export const calculateAmountTradedCurveV2 =(priceImpactEst, dataPool)=>{
+    const {i,j,coins,reserve,rate,address,decimals}= dataPool
+    let cantren = reserve[j] * 10**(36-decimals[j]) / rate
+    let canduoi = 0.01 * 10 ** 36
+
+    let isLoop = true
+    let index = 0
+
+
+    while (isLoop) {
+        index++
+        if(index ===100) return 0
+        const amountIn = (cantren + canduoi) / 2
+        
+        const amountOut = calcAmountOutCurvev2(amountIn, reserve, dataPool)
+        const priceMarket = amountOut / amountIn
+        const priceImpact = 1 - priceMarket / rate
+        
+        if(priceImpact===NaN){
+            console.log(address, amountIn, canduoi, cantren, priceImpact, index)
+            return 0
+        }
+        if (Math.abs(priceImpact - priceImpactEst) < 0.00001) {
+            isLoop = false
+            return amountIn*coins[i].usdPrice
+        }
+        if (priceImpact - priceImpactEst > 0) cantren = amountIn
+        if (priceImpact - priceImpactEst < 0) canduoi = amountIn
+    }
+
+}
+
+export const calcRateCurveV2 = (info,i,j)=> {
+    const AMOUNT_CALC_RATE = 0.001
+    const {reserve,A,fee,decimals,D,priceScale,gamma} = info
+    
+    const otherParam = {
+        i:j,
+        j:i,
+        A,fee,decimals,D,priceScale,gamma
+    }
+    const amountIn = AMOUNT_CALC_RATE * 10**36
+    const amountOut = calcAmountOutCurvev2(amountIn,reserve,otherParam)
+    
+    const rate = amountIn/Number(amountOut)
+
+    return rate
 }
