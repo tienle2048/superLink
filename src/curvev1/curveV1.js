@@ -2,10 +2,10 @@ import { ABI, POOL_TYPE } from "./constants"
 import { web3 } from "./web3"
 
 
-/* 
+
 const getUnderlyingAddressCurve = async (address, coins) => {
-    const contract = new web3duphong.eth.Contract(
-        AbiPoolCurve,
+    const contract = new web3.eth.Contract(
+        ABI.POOL_CURVE_V1_UNDER,
         address
     );
     const listAddress = Promise.all(coins.map(async (item, index) => {
@@ -14,7 +14,7 @@ const getUnderlyingAddressCurve = async (address, coins) => {
         .catch(res => [])
     return listAddress
 }
- */
+
 
 
 export const getDataPoolCurveV1 = async () => {
@@ -22,13 +22,26 @@ export const getDataPoolCurveV1 = async () => {
         .then((response) => response.json())
 
     const data = await Promise.all(dataApi.data.poolData.map(async item => {
-        const underlyingAddress = []// await getUnderlyingAddressCurve(item.address, item.coins)
-        const readAddress = []//item.underlyingCoins? item.underlyingCoins.map(item=>item.address):[]
+        const underlyingAddress = await getUnderlyingAddressCurve(item.address, item.coins)
+        const readAddress = item.underlyingCoins ? item.underlyingCoins.map(item => item.address) : []
 
         const contract = new web3.eth.Contract(
             ABI.POOL_CURVE_V1,
             item.address
         );
+
+        const isUnderlyingAddress = underlyingAddress.length!==0
+
+        const newCoins = item.coins.map((item,index)=>{
+
+            const [addressItem,underlyingAddressItem] = isUnderlyingAddress ?  [underlyingAddress[index],item.address]:[item.address,underlyingAddress[index]]
+
+            return {
+                ...item,
+                address:addressItem,
+                underlyingAddress:underlyingAddressItem
+            }
+        })
 
         const fee = await contract.methods.fee().call()
 
@@ -36,6 +49,7 @@ export const getDataPoolCurveV1 = async () => {
             ...item,
             amplificationCoefficient: parseInt(item.amplificationCoefficient),
             fee: parseInt(fee),
+            coins:newCoins,
             coinsAddresses: [...item.coinsAddresses, ...underlyingAddress, ...readAddress]
         }
     }))
@@ -66,34 +80,70 @@ export const getAddressPoolCurveV1 = async (DataTokenA, DataTokenB, listDataPool
 
 export const getReservePoolCurveV1 = async (address, coins) => {
 
-    const contract = new web3.eth.Contract(
+    const contractNormal = new web3.eth.Contract(
         ABI.POOL_CURVE_V1,
         address
     );
 
+    const contractAave = new web3.eth.Contract(
+        ABI.POOL_CURVE_V1_AAVE,
+        address
+    );
+
+    
+
     const balances = await Promise.all(coins.map(async (item, index) => {
-        return await contract.methods.balances(index).call()
+        return await contractNormal.methods.balances(index).call()
     })).then(res => res)
         .catch(res => {
-            return coins.map(item => 0)
+            return coins.map(item => 1)
         })
 
-    const exchangeRate = await Promise.all(coins.map(async item => {
+    const balancesAave = await Promise.all(coins.map(async (item, index) => {
+        return await contractAave.methods.balances(index).call()
+    })).then(res => res)
+        .catch(res => {
+            return coins.map(item => 1)
+        })
+
+    const exchangeRateCompount = await Promise.all(coins.map(async item => {
         const contractWapperToken = new web3.eth.Contract(
             ABI.TOKEN_WAPPER,
-            item.address
+            item.underlyingAddress
         );
         return await contractWapperToken.methods.exchangeRateStored().call()
     }))
-        .then(res => res)
+        .then(res => {
+            return res.map(item => item/10**18)
+        })
+        .catch(res => {
+            return coins.map(item => 1)
+        })
+
+    const exchangeRateAave = await Promise.all(coins.map(async item => {
+        const contractWapperToken = new web3.eth.Contract(
+            ABI.TOKEN_WAPPER_AAVE,
+            item.underlyingAddress
+        );
+        return await contractWapperToken.methods.getPricePerFullShare().call()
+    }))
+        .then(res => {
+            return res.map(item => item/10**18)
+        })
         .catch(res => {
             return coins.map(item => 1)
         })
 
 
+    
 
-    const realBalances = balances.map((item, index) => item * exchangeRate[index] * 10 ** (36 - coins[index].decimals))
-    return { reserve: realBalances }
+
+
+    const realBalances = balances.map((item, index) =>balancesAave[index]* item * exchangeRateCompount[index] * exchangeRateAave[index] * 10 ** (36 - coins[index].decimals))
+    console.log("🚀 ~ file: curveV1.js:114 ~ getReservePoolCurveV1 ~ realBalances:", realBalances, address)
+    return {
+         reserve: realBalances 
+        }
 }
 
 export const calculateAmountTradedCurveV1 = (priceImpactEst, dataPool) => {

@@ -137,25 +137,19 @@ const getDataRoute = async (routeInput) => {
             const subRoute1 = await Promise.all(routeItem.subRoute.map(async it => {
                 const coins = it.coins ? it.coins : routeItem.coins
                 const { i, j } = getIndexPoolCurve(coins, routeItem.coins)
-                //const indexCurve = getIndexTokenCurve(coins, routeItem.coins[1].address)
                 const detail = await getDetailPool(it.address, it.type, coins)
-                //const amountTradedEst = calculateAmountTraded(0.55, it.type, detail.reserve, coins, indexCurve)
                 return {
                     ...it,
                     ...detail,
                     i: i,
                     j: j,
                     coins: coins
-                    // amountTradedEst: amountTradedEst
                 }
             }))
-            //const totalAmountTradedest = subRoute1.reduce((a, b) => a + b.amountTradedEst, 0)
-
             return {
                 subRoute: subRoute1,
                 namePair: routeItem.namePair,
                 coins: routeItem.coins,
-                //totalAmountTradedest: totalAmountTradedest
             }
         }))
 
@@ -172,9 +166,11 @@ const addPoolMultiToken = (routeInput, queuePoolCurveV1) => {
     const routeOutput = routeInput.map(item => {
         const addCurveV1 = item.route.map(routeItem => {
             const okla = queuePoolCurveV1Fake.filter(item => {
-                const addressCoins = item.coins.map(item => item.address.toUpperCase())
+                
+                const addressCoins = item.coinsAddresses.map(item => item.toUpperCase())
                 const addressCoinsRoute = routeItem.coins.map(item => item.address.toUpperCase())
                 const okla = intersection(addressCoins, addressCoinsRoute)
+                
                 const isSwapStableCoin = okla.length === 2
                 return isSwapStableCoin
             }).map(item => {
@@ -191,8 +187,8 @@ const addPoolMultiToken = (routeInput, queuePoolCurveV1) => {
             return okla
 
         })
+        console.log(addCurveV1)
 
-        //console.log(addCurveV1)
         const routeHaveCurveV1 = item.route.map((routeItem, index) => {
             let poolCurveV1 = []
             if (true) {
@@ -202,7 +198,6 @@ const addPoolMultiToken = (routeInput, queuePoolCurveV1) => {
                         id: item.id
                     }
                 })
-                console.log("🚀 ~ file: index.js:209 ~ routeHaveCurveV1 ~ queuePoolCurveV1:", queuePoolCurveV1)
                 queuePoolCurveV1 = xorBy(listId, queuePoolCurveV1, 'id')
             }
 
@@ -386,6 +381,7 @@ export const main = async (tokenA, tokenB, amount = 10000000, chain, callback) =
             ...detail
         }
     }))
+    console.log("🚀 ~ file: index.js:382 ~ queuePoolCurve ~ queuePoolCurve:", queuePoolCurve)
 
     const routeHaveData = await getDataRoute(allRouter)
 
@@ -412,12 +408,13 @@ export const main = async (tokenA, tokenB, amount = 10000000, chain, callback) =
         const routeHaveTradeEst = setAmountTradedEst(routeHavePercentLan2, 0.005 * i)
 
         const routeHavePercent1 = splicePercent(routeHaveTradeEst)
+        //console.log("🚀 ~ file: index.js:411 ~ main ~ routeHavePercent1:", routeHavePercent1)
 
-        const filterRoute1 = filterSmallPool(routeHavePercent1, 0.02)
+       const filterRoute1 = filterSmallPool(routeHavePercent1, 0.01)
 
-        //const ecec1 = splicePercent(filterRoute1)
+       const ecec1 = splicePercent(filterRoute1)
 
-        const okla = calcAmountOutRoute(filterRoute1, amount)
+        const okla = calcAmountOutRoute(ecec1, amount)
         const out = okla.reduce((a, b) => a + b.amountOut, 0) / (10 ** 36)
         const amountIn = okla.reduce((a, b) => a + b.amountIn, 0) / (10 ** 36)
 
