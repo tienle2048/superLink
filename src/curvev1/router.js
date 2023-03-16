@@ -4,33 +4,33 @@ import { getAddressPoolCurveV2, getAddressPoolCurveV2noFac, getDataPoolCurveV2 }
 import { getAddressPoolUniV2 } from "./uniV2"
 import { getAddressPoolUniv3 } from "./uniV3"
 
-const getListAddressPool = async (addressTokenA, addressTokenB , chain,listPoolCurveV1,listDataPool) => {
+const getListAddressPool = async (addressTokenA, addressTokenB, chain, listPoolCurveV1, listDataPool) => {
 
-    const arrAddressPoolUniV2 =await getAddressPoolUniV2(addressTokenA, addressTokenB,chain)
-    
-    const arrAddressPoolCurveV1 = await getAddressPoolCurveV1(addressTokenA, addressTokenB, listDataPool,chain)
+    const arrAddressPoolUniV2 = await getAddressPoolUniV2(addressTokenA, addressTokenB, chain)
 
-    const arrAddressPoolCurveV2noFac = await getAddressPoolCurveV2noFac(addressTokenA, addressTokenB, listDataPool,chain)
+    const arrAddressPoolCurveV1 = await getAddressPoolCurveV1(addressTokenA, addressTokenB, listDataPool, chain)
 
-    const arrAddressPoolCurveV2 = await getAddressPoolCurveV2(addressTokenA, addressTokenB,chain)
+    const arrAddressPoolCurveV2noFac = await getAddressPoolCurveV2noFac(addressTokenA, addressTokenB, listDataPool, chain)
 
-    const arrAddressPoolUniV3 =[]// await getAddressPoolUniv3(addressTokenA, addressTokenB,chain)
+    const arrAddressPoolCurveV2 = await getAddressPoolCurveV2(addressTokenA, addressTokenB, chain)
 
-    listPoolCurveV1.push(...arrAddressPoolCurveV1,...arrAddressPoolCurveV2noFac)
-    const resultArr = [...arrAddressPoolUniV2, ...arrAddressPoolUniV3,...arrAddressPoolCurveV2]//,...arrAddressPoolCurveV2]
+    const arrAddressPoolUniV3 = []// await getAddressPoolUniv3(addressTokenA, addressTokenB,chain)
+
+    listPoolCurveV1.push(...arrAddressPoolCurveV1, ...arrAddressPoolCurveV2noFac)
+    const resultArr = [...arrAddressPoolUniV2, ...arrAddressPoolUniV3, ...arrAddressPoolCurveV2]//,...arrAddressPoolCurveV2]
     return resultArr
 }
 
-const getPoolApi = async ()=>{
+const getPoolApi = async () => {
     const listPoolCurveV1okla = await getDataPoolCurveV1()
     const listPoolCurveV2 = await getDataPoolCurveV2()
 
-    return [...listPoolCurveV1okla,...listPoolCurveV2]
+    return [...listPoolCurveV1okla, ...listPoolCurveV2]
 }
 
-export const findAllRoute = async (tokenA, tokenB, chain,listPoolCurveV1) => {
+export const findAllRoute = async (tokenA, tokenB, chain, listPoolCurveV1) => {
 
-    let listDataPool= await getPoolApi()
+    let listDataPool = await getPoolApi()
 
     let allRoute = []
     /*  await Promise.all(tokenTrungGian.map(async itemC => {
@@ -74,7 +74,7 @@ export const findAllRoute = async (tokenA, tokenB, chain,listPoolCurveV1) => {
              return {}
          })
      })) */
-    const AtoB = await getListAddressPool(tokenA, tokenB, chain,listPoolCurveV1,listDataPool)
+    const AtoB = await getListAddressPool(tokenA, tokenB, chain, listPoolCurveV1, listDataPool)
     allRoute.push({
         route: [
             {
@@ -88,9 +88,9 @@ export const findAllRoute = async (tokenA, tokenB, chain,listPoolCurveV1) => {
     await Promise.all(tokenTrungGian.map(async item => {
 
         if (item.address === tokenA.address || item.address === tokenB.address) return {}
-        const AtoC = await getListAddressPool(tokenA, item, chain,listPoolCurveV1,listDataPool)
+        const AtoC = await getListAddressPool(tokenA, item, chain, listPoolCurveV1, listDataPool)
         if (AtoC.length === 0) return {}
-        const CtoB = await getListAddressPool(item, tokenB, chain,listPoolCurveV1,listDataPool)
+        const CtoB = await getListAddressPool(item, tokenB, chain, listPoolCurveV1, listDataPool)
         if (CtoB.length === 0) return {}
 
         allRoute.push({

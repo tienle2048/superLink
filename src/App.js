@@ -36,7 +36,7 @@ const SubPool = ({ dataSubRoute }) => {
 
 
               <span>{item.splicePercent * 100}%</span>
-              <span>{item?.rate}</span>
+              <span>{item?.amountTradedEst}</span>
             </div>
           )
         })}
@@ -85,7 +85,7 @@ function App() {
   const [percentLimit,setPercentLimit] = useState(0)
 
   const init = async (callback) => {
-    const data = await main( usdt,eth,input*(10**36),percentLimit,callback)
+    const data = await main( usdt,dai,input*(10**36),percentLimit,callback)
     
   }
 

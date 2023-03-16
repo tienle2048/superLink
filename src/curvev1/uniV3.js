@@ -49,12 +49,12 @@ export const getReservePoolUniV3 = async (address, coins) => {
 
 export const calcAmountOutUniV3 = async (amountIn, reserve, otherParam) => {
 
-    const {coins,fee} =otherParam
+    const { coins, fee } = otherParam
     const addrQuoter = "0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6"
     let constract = new web3.eth.Contract(ABI.QUOTER_UNI_V3, addrQuoter)
 
-    const amountInFake =10000000
-    
+    const amountInFake = 10000000
+
     return await constract.methods.quoteExactInputSingle(
         coins[0].address,
         coins[1].address,

@@ -244,10 +244,10 @@ const get_dy = (i, j, dx, priceScale, balances, A, gamma, D) => {
 }
 
 export const calcAmountOutCurvev2 = (amountIn, reserve, otherParam) => {
-    const { A, D, priceScale,decimals, gamma, i, j } = otherParam
-    const amountInConvertBigInt =BigInt(Math.floor(amountIn/(10**36)*10**decimals[i]))
+    const { A, D, priceScale, decimals, gamma, i, j } = otherParam
+    const amountInConvertBigInt = BigInt(Math.floor(amountIn / (10 ** 36) * 10 ** decimals[i]))
     const amountOut = get_dy(i, j, amountInConvertBigInt, priceScale, reserve, A, gamma, BigInt(D))
-    return Number(amountOut)*10**(36-decimals[j])
+    return Number(amountOut) * 10 ** (36 - decimals[j])
 }
 
 
@@ -257,7 +257,7 @@ export const getDataPoolCurveV2 = async () => {
         .then((response) => response.json())
         .then(res => res.data.poolData)
 
-    
+
 
     const data = dataApi.map(item => {
         return {
@@ -291,8 +291,8 @@ export const getAddressPoolCurveV2noFac = async (DataTokenA, DataTokenB, listDat
     return listPoolforPair
 }
 
-export const getAddressPoolCurveV2= async(TokenA, TokenB) => {
-    
+export const getAddressPoolCurveV2 = async (TokenA, TokenB) => {
+
     const FACTORY_ADDRESS_CURVE_V2 = [{ factory: "0xF18056Bbd320E96A48e3Fbf8bC061322531aac99", name: "curveV2 factory" }]
 
     const arrAddressPool = await Promise.all(
@@ -346,7 +346,7 @@ export const getReservePoolCurveV2 = async (address, coins) => {
     }
 }
 
-export const getReservePoolCurveV2Fac = async (address,coins)=>{
+export const getReservePoolCurveV2Fac = async (address, coins) => {
     const contract = new web3.eth.Contract(
         ABI.POOL_CURVE_V2_FAC,
         address
@@ -379,9 +379,9 @@ export const getReservePoolCurveV2Fac = async (address,coins)=>{
     }
 }
 
-export const calculateAmountTradedCurveV2 =(priceImpactEst, dataPool)=>{
-    const {i,j,coins,reserve,rate,address,decimals}= dataPool
-    let cantren = reserve[j] * 10**(36-decimals[j]) / rate
+export const calculateAmountTradedCurveV2 = (priceImpactEst, dataPool) => {
+    const { i, j, coins, reserve, rate, address, decimals } = dataPool
+    let cantren = reserve[j] * 10 ** (36 - decimals[j]) / rate
     let canduoi = 0.01 * 10 ** 36
 
     let isLoop = true
@@ -390,20 +390,20 @@ export const calculateAmountTradedCurveV2 =(priceImpactEst, dataPool)=>{
 
     while (isLoop) {
         index++
-        if(index ===100) return 0
+        if (index === 100) return 0
         const amountIn = (cantren + canduoi) / 2
-        
+
         const amountOut = calcAmountOutCurvev2(amountIn, reserve, dataPool)
         const priceMarket = amountOut / amountIn
         const priceImpact = 1 - priceMarket / rate
-        
-        if(priceImpact===NaN){
+
+        if (priceImpact === NaN) {
             console.log(address, amountIn, canduoi, cantren, priceImpact, index)
             return 0
         }
         if (Math.abs(priceImpact - priceImpactEst) < 0.00001) {
             isLoop = false
-            return amountIn*coins[i].usdPrice
+            return amountIn * coins[i].usdPrice
         }
         if (priceImpact - priceImpactEst > 0) cantren = amountIn
         if (priceImpact - priceImpactEst < 0) canduoi = amountIn
@@ -411,19 +411,19 @@ export const calculateAmountTradedCurveV2 =(priceImpactEst, dataPool)=>{
 
 }
 
-export const calcRateCurveV2 = (info,i,j)=> {
+export const calcRateCurveV2 = (info, i, j) => {
     const AMOUNT_CALC_RATE = 0.001
-    const {reserve,A,fee,decimals,D,priceScale,gamma} = info
-    
+    const { reserve, A, fee, decimals, D, priceScale, gamma } = info
+
     const otherParam = {
-        i:j,
-        j:i,
-        A,fee,decimals,D,priceScale,gamma
+        i: j,
+        j: i,
+        A, fee, decimals, D, priceScale, gamma
     }
-    const amountIn = AMOUNT_CALC_RATE * 10**36
-    const amountOut = calcAmountOutCurvev2(amountIn,reserve,otherParam)
-    
-    const rate = amountIn/Number(amountOut)
+    const amountIn = AMOUNT_CALC_RATE * 10 ** 36
+    const amountOut = calcAmountOutCurvev2(amountIn, reserve, otherParam)
+
+    const rate = amountIn / Number(amountOut)
 
     return rate
 }
