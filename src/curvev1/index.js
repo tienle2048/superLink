@@ -226,7 +226,7 @@ const setAmountTradedEst = (routeInput, priceImpactEst) => {
         const route = item.route.map(routeItem => {
             const newSubRoute = routeItem.subRoute.map(it => {
                 const amountTradedEst = calculateAmountTraded(priceImpact, it)
-                console.log("🚀 ~ file: index.js:229 ~ newSubRoute ~ amountTradedEst:", amountTradedEst)
+               
                 return {
                     ...it,
                     amountTradedEst: amountTradedEst,
@@ -360,7 +360,7 @@ const maxAmountOut = (routeInput) => {
         const routeItemLength = item.route.length
 
         const maxAmountOut = item.route[routeItemLength - 1].subRoute.reduce((a, b) => a + b.reserve[b.j], 0)
-        console.log("🚀 ~ file: index.js:368 ~ resultRoute ~ maxAmountOut:", maxAmountOut)
+        
 
     })
 
@@ -374,7 +374,7 @@ export const main = async (tokenA, tokenB, amount = 10000000, chain, callback) =
 
     const allRouter = await findAllRoute(tokenA, tokenB, chain, listPoolCurveV1)
 
-    listPoolCurveV1.push(DATA_POOL_CURVE_TESTNET_BSC[0])
+    listPoolCurveV1.push(...DATA_POOL_CURVE_TESTNET_BSC)
 
     let queuePoolCurve = await Promise.all(uniqBy(listPoolCurveV1, 'id').map(async it => {
         const detail = await getDetailPool(it.address, it.type, it.coins)
@@ -403,12 +403,16 @@ export const main = async (tokenA, tokenB, amount = 10000000, chain, callback) =
 
     const routeHavePercentLan2 = splicePercent(routeHaveTradeEstLan2)
 
-    //callback(routeHavePercentLan2, 1)
+    const filterRoute = filterSmallPool(routeHavePercentLan2, 0.02)
+    const ecec1 = splicePercent(filterRoute)
 
-    //const filterRoute = filterSmallPool(routeHavePercentLan2, 0.02)
+    const okla = calcAmountOutRoute(ecec1, amount)
+    const out = okla.reduce((a, b) => a + b.amountOut, 0) / (10 ** 36)
+
+    callback(okla, out)
 
     let maxOut = [0, 0, 0]
-
+/* 
     for (let i = 1; i < 200; i++) {
 
         const routeHaveTradeEst = setAmountTradedEst(routeHavePercentLan2, 0.005 * i)
@@ -432,10 +436,10 @@ export const main = async (tokenA, tokenB, amount = 10000000, chain, callback) =
         //console.log(okla,out , amountIn,0.01 * i)
 
 
-    }
+    } 
     callback(maxOut[2], maxOut[0])
     console.log(maxOut)
-
+*/
     
 }
 

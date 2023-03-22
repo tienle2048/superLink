@@ -140,7 +140,7 @@ export const getReservePoolCurveV1 = async (address, coins) => {
 
 
     const realBalances = balances.map((item, index) =>balancesAave[index]* item * exchangeRateCompount[index] * exchangeRateAave[index] * 10 ** (36 - coins[index].decimals))
-    console.log("🚀 ~ file: curveV1.js:114 ~ getReservePoolCurveV1 ~ realBalances:", realBalances, address)
+    
     return {
          reserve: realBalances 
         }
@@ -268,7 +268,7 @@ export const calcAmountOutCurvev1 = (amountIn, reserve, otherParam) => {
     }
 
     const amountOut = get_dy(i, j, amountIn)
-    console.log("🚀 ~ file: curveV1.js:271 ~ calcAmountOutCurvev1 ~ amountOut:", amountOut)
+    
 
     return amountOut
 }

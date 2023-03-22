@@ -8,10 +8,11 @@ const getListAddressPool = async (addressTokenA, addressTokenB, chain, listPoolC
 
 
     const arrAddressPoolUniV2 = await getAddressPoolUniV2(addressTokenA, addressTokenB, chain)
+    console.log("🚀 ~ file: router.js:11 ~ getListAddressPool ~ arrAddressPoolUniV2:", arrAddressPoolUniV2,addressTokenA,addressTokenB)
 
 
     const arrAddressPoolCurveV1 = await getAddressPoolCurveV1(addressTokenA, addressTokenB, listDataPool, chain)
-
+    console.log("🚀 ~ file: router.js:11 ~ getListAddressPool ~ arrAddressPoolCurveV1:", arrAddressPoolCurveV1,addressTokenA,addressTokenB,listDataPool)
 
     const arrAddressPoolCurveV2noFac = await getAddressPoolCurveV2noFac(addressTokenA, addressTokenB, listDataPool, chain)
 

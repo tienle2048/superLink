@@ -405,6 +405,15 @@ export const ABI = {
 
 }
 
+export const POOL_TYPE = {
+    uniV2: 'uniV2',
+    uniV3: 'uniV3',
+    curveV1: 'curveV1',
+    curveV2: 'curveV2',
+    curveV2Fac: 'curveV2Fac',
+    balancer: 'balancer'
+}
+
 
 /* 
 export const tokenTrungGian = [
@@ -427,6 +436,8 @@ export const tokenTrungGian1 = [
 export const tokenTrungGian = [
 
     { chainId: 1, address: '0xCA8eB2dec4Fe3a5abbFDc017dE48E461A936623D', decimals: 18, symbol: 'USDC', name: 'USD//C', usdPrice: 1 },
+    { chainId: 1, address: '0x0fb5d7c73fa349a90392f873a4fa1ecf6a3d0a96', decimals: 18, symbol: 'USDT', name: 'USDT', usdPrice: 1 },
+
 
 ]
 
@@ -488,6 +499,78 @@ export const DATA_POOL_CURVE_TESTNET_BSC = [
                 "decimals": "18",
                 "isBasePoolLpToken": false,
                 "symbol": "USDC",
+                "poolBalance": "197981356991458"
+            }
+        ],
+        "usdTotal": 422129871.08046025,
+        "isMetaPool": false,
+        "usdTotalExcludingBasePool": 422129871.08046025,
+        "gaugeAddress": "0xbfcf63294ad7105dea65aa58f8ae5be2d9d0952a",
+        "gaugeRewards": [],
+        "gaugeCrvApy": [
+            0.6662330746372814,
+            1.6655826865932035
+        ],
+        type: POOL_TYPE.curveV1,
+        A: 1000,
+        fee:15000000
+
+    },
+    {
+        "id": "1",
+        "address": "0xc418d68751Cbe0407C8fdd90Cde73cE95b892f39",
+        "coinsAddresses": [
+            "0x0fB5D7c73FA349A90392f873a4FA1eCf6a3d0a96",
+            "0x3304dd20f6Fe094Cb0134a6c8ae07EcE26c7b6A7",
+            "0x0000000000000000000000000000000000000000",
+            "0x0000000000000000000000000000000000000000"
+        ],
+        "decimals": [
+            "18",
+            "18",
+            "0",
+            "0"
+        ],
+        "virtualPrice": "1025357684572733513",
+        "amplificationCoefficient": "1000",
+        "assetType": "0",
+        "totalSupply": "409988947134236354025788583",
+        "lpTokenAddress": "0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490",
+        "name": "Pancake StableSwap USDT/BUSD",
+        "symbol": "3Crv",
+        "priceOracle": 0,
+
+        "poolUrls": {
+            "swap": [
+                "https://curve.fi/#/ethereum/pools/3pool/swap",
+                "https://classic.curve.fi/3pool"
+            ],
+            "deposit": [
+                "https://curve.fi/#/ethereum/pools/3pool/deposit",
+                "https://classic.curve.fi/3pool/deposit"
+            ],
+            "withdraw": [
+                "https://curve.fi/#/ethereum/pools/3pool/withdraw",
+                "https://classic.curve.fi/3pool/withdraw"
+            ]
+        },
+        "implementation": "",
+        "assetTypeName": "usd",
+        "coins": [
+            {
+                "address": "0x0fB5D7c73FA349A90392f873a4FA1eCf6a3d0a96",
+                "usdPrice": 1.003,
+                "decimals": "18",
+                "isBasePoolLpToken": false,
+                "symbol": "USDT",
+                "poolBalance": "188797625122201283032332029"
+            },
+            {
+                "address": "0x3304dd20f6Fe094Cb0134a6c8ae07EcE26c7b6A7",
+                "usdPrice": 1.004,
+                "decimals": "18",
+                "isBasePoolLpToken": false,
+                "symbol": "BUSD",
                 "poolBalance": "197981356991458"
             }
         ],

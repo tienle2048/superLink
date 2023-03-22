@@ -79,6 +79,7 @@ function App() {
 
   const busdTestnet = { address: "0x3304dd20f6Fe094Cb0134a6c8ae07EcE26c7b6A7", "chainId": 56, "decimals": 18, "symbol": "BUSD" }
   const aTestnet = { address: "0xD67aC77AF1Aa020Ed3D169daB78Cf70aFe1f2498", "chainId": 56, "decimals": 18, "symbol": "A" }
+  const usdtTestNet ={ address: "0x0fB5D7c73FA349A90392f873a4FA1eCf6a3d0a96", "chainId": 56, "decimals": 18, "symbol": "" }
 
 
   const token1V2 = { address: "0xBf5140A22578168FD562DCcF235E5D43A02ce9B1", "chainId": 56, "decimals": 18, "symbol": "UNI" }
@@ -90,7 +91,7 @@ function App() {
   const [percentLimit, setPercentLimit] = useState(0)
 
   const init = async (callback) => {
-    const data = await main(aTestnet, busdTestnet, input * (10 ** 36), percentLimit, callback)
+    const data = await main(busdTestnet, aTestnet, input * (10 ** 36), percentLimit, callback)
 
   }
 

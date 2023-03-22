@@ -32,7 +32,7 @@ export const getReservePoolUniV2 = async (address, coins) => {
 
     let { _reserve0, _reserve1 } = detailPool
 
-    if (token0 !== coins[0].address) {
+    if (token0.toUpperCase() !== coins[0].address.toUpperCase()) {
         [_reserve0, _reserve1] = [_reserve1, _reserve0]
     }
     const [decimal0, decimal1] = [10 ** (36 - coins[0].decimals), 10 ** (36 - coins[1].decimals)]
@@ -50,7 +50,7 @@ export const calculateAmountTradedUniV2 = (priceImpactEst, dataPool) => {
     const { reserve, coins } = dataPool
 
     const _reserve0 = reserve[0]
-    const amountTraded = (_reserve0 * priceImpactEst) / ((1 - priceImpactEst) * (1 - 0.0025))
+    const amountTraded = (_reserve0 * priceImpactEst) / ((1 - priceImpactEst) * (1 - 0.003))
 
     return amountTraded 
 }
