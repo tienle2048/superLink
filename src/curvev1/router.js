@@ -6,13 +6,18 @@ import { getAddressPoolUniv3 } from "./uniV3"
 
 const getListAddressPool = async (addressTokenA, addressTokenB, chain, listPoolCurveV1, listDataPool) => {
 
+
     const arrAddressPoolUniV2 = await getAddressPoolUniV2(addressTokenA, addressTokenB, chain)
+
 
     const arrAddressPoolCurveV1 = await getAddressPoolCurveV1(addressTokenA, addressTokenB, listDataPool, chain)
 
+
     const arrAddressPoolCurveV2noFac = await getAddressPoolCurveV2noFac(addressTokenA, addressTokenB, listDataPool, chain)
 
+
     const arrAddressPoolCurveV2 = await getAddressPoolCurveV2(addressTokenA, addressTokenB, chain)
+
 
     const arrAddressPoolUniV3 = []// await getAddressPoolUniv3(addressTokenA, addressTokenB,chain)
 
@@ -29,8 +34,10 @@ const getPoolApi = async () => {
 }
 
 export const findAllRoute = async (tokenA, tokenB, chain, listPoolCurveV1) => {
+    
 
-    let listDataPool = await getPoolApi()
+    let listDataPool =[]// await getPoolApi()
+    
 
     let allRoute = []
     /*  await Promise.all(tokenTrungGian.map(async itemC => {

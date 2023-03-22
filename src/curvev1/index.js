@@ -1,4 +1,4 @@
-import { POOL_TYPE } from './constants'
+import { DATA_POOL_CURVE_TESTNET_BSC, POOL_TYPE } from './constants'
 import { calcAmountOutCurvev1, calcRateCurveV1, calculateAmountTradedCurveV1, getReservePoolCurveV1 } from './curveV1'
 import { calcAmountOutCurvev2, calcRateCurveV2, calculateAmountTradedCurveV2, getReservePoolCurveV2, getReservePoolCurveV2Fac } from './curveV2'
 import { findAllRoute } from './router'
@@ -36,7 +36,6 @@ const getDetailPool = async (address, type, coins) => {
 
 
 const calculateAmountTraded = (priceImpactEst, dataPool) => {
-
     switch (dataPool.type) {
         case POOL_TYPE.uniV2:
             return calculateAmountTradedUniV2(priceImpactEst, dataPool)
@@ -166,11 +165,11 @@ const addPoolMultiToken = (routeInput, queuePoolCurveV1) => {
     const routeOutput = routeInput.map(item => {
         const addCurveV1 = item.route.map(routeItem => {
             const okla = queuePoolCurveV1Fake.filter(item => {
-                
+
                 const addressCoins = item.coinsAddresses.map(item => item.toUpperCase())
                 const addressCoinsRoute = routeItem.coins.map(item => item.address.toUpperCase())
                 const okla = intersection(addressCoins, addressCoinsRoute)
-                
+
                 const isSwapStableCoin = okla.length === 2
                 return isSwapStableCoin
             }).map(item => {
@@ -227,6 +226,7 @@ const setAmountTradedEst = (routeInput, priceImpactEst) => {
         const route = item.route.map(routeItem => {
             const newSubRoute = routeItem.subRoute.map(it => {
                 const amountTradedEst = calculateAmountTraded(priceImpact, it)
+                console.log("🚀 ~ file: index.js:229 ~ newSubRoute ~ amountTradedEst:", amountTradedEst)
                 return {
                     ...it,
                     amountTradedEst: amountTradedEst,
@@ -371,8 +371,10 @@ const maxAmountOut = (routeInput) => {
 
 export const main = async (tokenA, tokenB, amount = 10000000, chain, callback) => {
 
+
     const allRouter = await findAllRoute(tokenA, tokenB, chain, listPoolCurveV1)
-    console.log("🚀 ~ file: index.js:380 ~ main ~ listPoolCurveV1:", listPoolCurveV1)
+
+    listPoolCurveV1.push(DATA_POOL_CURVE_TESTNET_BSC[0])
 
     let queuePoolCurve = await Promise.all(uniqBy(listPoolCurveV1, 'id').map(async it => {
         const detail = await getDetailPool(it.address, it.type, it.coins)
@@ -381,11 +383,8 @@ export const main = async (tokenA, tokenB, amount = 10000000, chain, callback) =
             ...detail
         }
     }))
-    console.log("🚀 ~ file: index.js:382 ~ queuePoolCurve ~ queuePoolCurve:", queuePoolCurve)
 
     const routeHaveData = await getDataRoute(allRouter)
-
-
 
     const routeHaveTradeEst = setAmountTradedEst(routeHaveData, 0.01)
 
@@ -393,11 +392,18 @@ export const main = async (tokenA, tokenB, amount = 10000000, chain, callback) =
 
     const sortRouteByPercent = sortRoute(routeHavePercent)
 
+    
+
     const routeHavePoolMultiToken = addPoolMultiToken(sortRouteByPercent, queuePoolCurve)
+
+    
 
     const routeHaveTradeEstLan2 = setAmountTradedEst(routeHavePoolMultiToken, 0.01)
 
+
     const routeHavePercentLan2 = splicePercent(routeHaveTradeEstLan2)
+
+    //callback(routeHavePercentLan2, 1)
 
     //const filterRoute = filterSmallPool(routeHavePercentLan2, 0.02)
 
@@ -410,9 +416,9 @@ export const main = async (tokenA, tokenB, amount = 10000000, chain, callback) =
         const routeHavePercent1 = splicePercent(routeHaveTradeEst)
         //console.log("🚀 ~ file: index.js:411 ~ main ~ routeHavePercent1:", routeHavePercent1)
 
-       const filterRoute1 = filterSmallPool(routeHavePercent1, 0.01)
+        const filterRoute1 = filterSmallPool(routeHavePercent1, 0.01)
 
-       const ecec1 = splicePercent(filterRoute1)
+        const ecec1 = splicePercent(filterRoute1)
 
         const okla = calcAmountOutRoute(ecec1, amount)
         const out = okla.reduce((a, b) => a + b.amountOut, 0) / (10 ** 36)
@@ -425,16 +431,12 @@ export const main = async (tokenA, tokenB, amount = 10000000, chain, callback) =
         }
         //console.log(okla,out , amountIn,0.01 * i)
 
-        /* setTimeout(()=>{
-            
-        },[i*500])
-     */
 
     }
     callback(maxOut[2], maxOut[0])
     console.log(maxOut)
 
-    const ecec = maxAmountOut(maxOut[2])
+    
 }
 
 

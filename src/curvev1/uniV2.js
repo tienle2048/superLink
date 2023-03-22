@@ -2,8 +2,9 @@ import { ABI, LIST_FACTORY_ACCRESS } from "./constants";
 import { web3 } from "./web3";
 
 export const getAddressPoolUniV2 = async (TokenA, TokenB) => {
+    
     const arrAddressPool = await Promise.all(
-        LIST_FACTORY_ACCRESS.eth.map(async (item) => {
+        LIST_FACTORY_ACCRESS.binanceTestNet.map(async (item) => {
             const contract = new web3.eth.Contract(
                 ABI.FACTORY_UNI_V2,
                 item.factory
@@ -17,6 +18,7 @@ export const getAddressPoolUniV2 = async (TokenA, TokenB) => {
         })
     )
     let resultArr = arrAddressPool.filter(item => parseInt(item.address, 16) !== 0).map(item => { return { ...item, type: "uniV2" } })
+    
     return resultArr
 }
 
@@ -44,12 +46,13 @@ export const getReservePoolUniV2 = async (address, coins) => {
 }
 
 export const calculateAmountTradedUniV2 = (priceImpactEst, dataPool) => {
+    
     const { reserve, coins } = dataPool
 
     const _reserve0 = reserve[0]
     const amountTraded = (_reserve0 * priceImpactEst) / ((1 - priceImpactEst) * (1 - 0.0025))
 
-    return amountTraded * coins[0].usdPrice
+    return amountTraded 
 }
 
 export const calcAmountOutUniV2 = (amountIn, reserveIn, reserveOut) => {

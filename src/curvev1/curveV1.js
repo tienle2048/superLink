@@ -168,7 +168,7 @@ export const calculateAmountTradedCurveV1 = (priceImpactEst, dataPool) => {
         }
         if (Math.abs(priceImpact - priceImpactEst) < 0.00001) {
             isLoop = false
-            return amountIn * coins[i].usdPrice
+            return amountIn 
         }
         if (priceImpact - priceImpactEst > 0) cantren = amountIn
         if (priceImpact - priceImpactEst < 0) canduoi = amountIn
@@ -268,6 +268,7 @@ export const calcAmountOutCurvev1 = (amountIn, reserve, otherParam) => {
     }
 
     const amountOut = get_dy(i, j, amountIn)
+    console.log("🚀 ~ file: curveV1.js:271 ~ calcAmountOutCurvev1 ~ amountOut:", amountOut)
 
     return amountOut
 }

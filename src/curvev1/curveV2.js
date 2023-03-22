@@ -292,6 +292,7 @@ export const getAddressPoolCurveV2noFac = async (DataTokenA, DataTokenB, listDat
 }
 
 export const getAddressPoolCurveV2 = async (TokenA, TokenB) => {
+    try{
 
     const FACTORY_ADDRESS_CURVE_V2 = [{ factory: "0xF18056Bbd320E96A48e3Fbf8bC061322531aac99", name: "curveV2 factory" }]
 
@@ -311,6 +312,10 @@ export const getAddressPoolCurveV2 = async (TokenA, TokenB) => {
     )
     let resultArr = arrAddressPool.filter(item => parseInt(item.address, 16) !== 0).map(item => { return { ...item, type: POOL_TYPE.curveV2Fac } })
     return resultArr
+    }
+    catch(err){
+        return []
+    }
 }
 
 export const getReservePoolCurveV2 = async (address, coins) => {
