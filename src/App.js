@@ -3,6 +3,7 @@ import './App.css';
 import { main } from './curvev1';
 import { useEffect, useState } from 'react'
 import { POOL_TYPE } from './curvev1/constants';
+import { swap } from './contract';
 
 
 
@@ -91,13 +92,14 @@ function App() {
   const [percentLimit, setPercentLimit] = useState(0)
 
   const init = async (callback) => {
-    const data = await main(busdTestnet, aTestnet, input * (10 ** 36), percentLimit, callback)
+    const data = await main( aTestnet,busdTestnet, input * (10 ** 36), percentLimit, callback)
 
   }
 
 
   const handleClick = () => {
     //encodeRouter(dataRoute)
+    swap(dataRoute,"1000")
     localStorage.setItem('okla1',JSON.stringify(dataRoute))
     console.log(dataRoute)
   }
